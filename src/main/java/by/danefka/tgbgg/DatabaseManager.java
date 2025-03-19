@@ -256,25 +256,6 @@ public class DatabaseManager {
         return -1;
     }
 
-    public long denyFriendRequest(long requestId) {
-        String sql = "SELECT sender_id FROM friend_requests WHERE request_id = ?";
-        try (Connection connection = connect();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, requestId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getLong("request_id");
-                }
-            }
-
-        } catch (
-                SQLException e) {
-            System.err.println("Ошибка соединения с базой данных: " + e.getMessage());
-        }
-
-    }
-
     public long acceptFriendRequest(long requestId) {
         String getRequestSql = "SELECT sender_id, receiver_id FROM friend_requests WHERE request_id = ? AND status = 'pending'";
         String insertFriendSql = "INSERT INTO friends (user_id, friend_id, friend_name) VALUES (?, ?, ?)";
