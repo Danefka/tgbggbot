@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import by.danefka.tgbgg.Enums.UserState;
 import by.danefka.tgbgg.Utils.Pair;
 
 public class DatabaseManager {
@@ -325,8 +326,5 @@ public class DatabaseManager {
         }
         return false;
     }
-
-
-//    public void addFriends()
-
 }
+

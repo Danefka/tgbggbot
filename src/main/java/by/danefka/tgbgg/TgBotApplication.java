@@ -1,5 +1,6 @@
 package by.danefka.tgbgg;
 
+import by.danefka.tgbgg.Enums.UserState;
 import by.danefka.tgbgg.Utils.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

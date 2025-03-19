@@ -1,4 +1,4 @@
-package by.danefka.tgbgg;
+package by.danefka.tgbgg.Enums;
 
 public enum UserState {
     addWaitingForGameTitle,
