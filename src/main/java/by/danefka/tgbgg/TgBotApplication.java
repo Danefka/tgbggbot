@@ -35,7 +35,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
 
         if (update.hasMessage() && !update.getMessage().getText().isEmpty()) {
-            DatabaseManager databaseManager = new DatabaseManager();
+            DatabaseManager databaseManager = DatabaseManager.getInstance();
             if (update.getMessage().getText().equals("/start")) {
                 start(update);
             } else {
@@ -94,10 +94,10 @@ public class TgBotApplication extends TelegramLongPollingBot {
     }
 
     private void acceptFriendRequest(Update update) {
-        Long requestId = Long.parseLong(update.getCallbackQuery().getData().split(":")[1]);
+        long requestId = Long.parseLong(update.getCallbackQuery().getData().split(":")[1]);
 
-        DatabaseManager databaseManager = new DatabaseManager();
-        Long senderId = databaseManager.acceptFriendRequest(requestId);
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
+        long senderId = databaseManager.acceptFriendRequest(requestId);
 
         deleteMessage(senderId, databaseManager.getBotLastMessageId(senderId));
         sendMessage(senderId, "Пользователь: " + update.getCallbackQuery().getFrom().getUserName() + " принял ваш запрос в друзья", InlineKeyboardFactory.mainMenu());
@@ -105,13 +105,13 @@ public class TgBotApplication extends TelegramLongPollingBot {
     }
 
     private void addFriendWithUserInput(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
-        Long friendId = databaseManager.getUserIdByUsername(update.getMessage().getText());
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
+        long friendId = databaseManager.getUserIdByUsername(update.getMessage().getText());
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         markup.setKeyboard(Collections.singletonList(Collections.singletonList(InlineKeyboardFactory.mainMenuButton())));
 
-        if (friendId == null) {
+        if (friendId == -1) {
             editMessage(update, "Извините, но чтобы вашего друга можно было добавить в друзья, он должен отправить мне сообщение.", markup);
             return;
         } else if (friendId == update.getMessage().getFrom().getId()) {
@@ -126,7 +126,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
     }
 
     private void addFriend(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         databaseManager.setUserState(update.getCallbackQuery().getFrom().getId(), UserState.addFriendWaitingForFriendUserName);
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         markup.setKeyboard(Collections.singletonList(Collections.singletonList(InlineKeyboardFactory.mainMenuButton())));
@@ -134,7 +134,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
     }
 
     private void friendsMenu(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         List<Pair<Integer, String>> friends = databaseManager.getFriends(update.getCallbackQuery().getFrom().getId());
         StringBuilder listOfFriends = new StringBuilder();
         if (friends.isEmpty()) {
@@ -157,13 +157,13 @@ public class TgBotApplication extends TelegramLongPollingBot {
 
 
     private void start(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         databaseManager.registerUser(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
         sendMessage(update, "Добро пожаловать, чем могу вам помочь?", InlineKeyboardFactory.mainMenu());
     }
 
     private void mainMenu(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         databaseManager.setUserState(update.getCallbackQuery().getFrom().getId(), null);
 
         editMessage(update, "Главное меню", InlineKeyboardFactory.mainMenu());
@@ -182,15 +182,19 @@ public class TgBotApplication extends TelegramLongPollingBot {
                 BoardGame game = BGGApiService.getGameById(gameId);
 
                 if (game != null) {
-                    DatabaseManager databaseManager = new DatabaseManager();
+                    DatabaseManager databaseManager = DatabaseManager.getInstance();
                     databaseManager.setUserState(chatId, null);
                     deleteMessage(chatId, databaseManager.getBotLastMessageId(chatId));
 
                     String gameInfo = String.format(
-                            "*%s*\n\n" +
-                            "🌍 *Мировой рэйтинг:* %s\n" +
-                            "⭐ *Средняя оценка:* %s\n" +
-                            "👥 *Количество игроков:* %s (лучше всего для %s)\n\n",
+                            """
+                                    *%s*
+
+                                    🌍 *Мировой рэйтинг:* %s
+                                    ⭐ *Средняя оценка:* %s
+                                    👥 *Количество игроков:* %s (лучше всего для %s)
+
+                                    """,
                             game.getTitle(),
                             game.getWorldRank(),
                             game.getAverageRating(),
@@ -243,7 +247,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
     }
 
     private void searchGameCallBackQuery(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         databaseManager.setUserState(update.getCallbackQuery().getFrom().getId(), UserState.searchWaitingForGameTitle);
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -253,7 +257,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
     }
 
     private void addPlayCallBackQuery(Update update) {
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         databaseManager.setUserState(update.getCallbackQuery().getFrom().getId(), UserState.addWaitingForGameTitle);
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -266,7 +270,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
         long userId = update.getCallbackQuery().getFrom().getId();
         long offset = Long.parseLong(update.getCallbackQuery().getData().split(":")[1]);
 
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         List<String> games = databaseManager.getGames(userId, offset);
 
         StringBuilder stringBuilder = new StringBuilder("Партии сыгранные вами:\n");
@@ -336,7 +340,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
         editMessage(update, "Добавил партию в " + boardGame.getTitle() + " в вашу статистику", InlineKeyboardFactory.mainMenu());
 
 
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         databaseManager.saveGame(userId, userName, boardGame.getTitle());
         databaseManager.setUserState(userId, null);
 
@@ -344,7 +348,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
 
     private void sendFriendRequestNotification(Update update, Long receiverId) {
         String text = update.getMessage().getFrom().getUserName() + " хочет добавить вас в друзья.\n";
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
         long requestId = databaseManager.createFriendRequest(update.getMessage().getFrom().getId(), receiverId);
         InlineKeyboardMarkup markup = InlineKeyboardFactory.requestMarkup(requestId);
         deleteMessage(receiverId,databaseManager.getBotLastMessageId(receiverId));
@@ -371,7 +375,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
         try {
             Message sentMessage = execute(message);
             int messageId = sentMessage.getMessageId();
-            DatabaseManager databaseManager = new DatabaseManager();
+            DatabaseManager databaseManager = DatabaseManager.getInstance();
             databaseManager.setBotLastMessageId(chatId, messageId);
         } catch (TelegramApiException e) {
             System.err.println("Ошибка при отправке фото: " + e.getMessage());
@@ -401,7 +405,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
         try {
             Message sentMessage = execute(message);
             int messageId = sentMessage.getMessageId();
-            DatabaseManager databaseManager = new DatabaseManager();
+            DatabaseManager databaseManager = DatabaseManager.getInstance();
             databaseManager.setBotLastMessageId(chatId, messageId);
         } catch (TelegramApiException e) {
             e.printStackTrace();
@@ -420,7 +424,7 @@ public class TgBotApplication extends TelegramLongPollingBot {
         }
 
         EditMessageText editMessageText = new EditMessageText();
-        DatabaseManager databaseManager = new DatabaseManager();
+        DatabaseManager databaseManager = DatabaseManager.getInstance();
 
         editMessageText.setChatId(chatId);
         editMessageText.setMessageId(databaseManager.getBotLastMessageId(chatId));

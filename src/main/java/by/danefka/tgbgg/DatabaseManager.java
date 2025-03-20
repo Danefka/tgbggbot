@@ -13,12 +13,20 @@ import by.danefka.tgbgg.Enums.UserState;
 import by.danefka.tgbgg.Utils.Pair;
 
 public class DatabaseManager {
+    private static DatabaseManager instance;
+
     private String URL;
     private String USER;
     private String PASSWORD;
 
+    public static DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
+    }
 
-    public DatabaseManager() {
+    private DatabaseManager() {
         loadDatabaseConfig();
     }
 
